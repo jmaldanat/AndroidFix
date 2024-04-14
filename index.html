@@ -120,6 +120,8 @@ function removeAccents(str) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+var currentPage = 1; // Declara la variable currentPage fuera de la función updatePagination()
+
 function filterProducts() {
   var input, filter, maxPrice, container, products, product, title, price, i, txtValue;
   input = document.getElementById("myInput");
@@ -148,7 +150,6 @@ function updatePagination() {
   var itemsPerPage = 8;
   var visibleProducts = Array.from(products).filter(product => product.style.display !== 'none');
   var totalPages = Math.ceil(visibleProducts.length / itemsPerPage);
-  var currentPage = 1;
   
   // Función para mostrar los productos de la página actual
   function displayCurrentPage() {
