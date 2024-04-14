@@ -149,7 +149,7 @@ function loadAndFilterProducts() {
   filteredProducts.forEach(function(product) {
     // Crear elementos HTML para cada producto
     var productHTML = '<div class="product">';
-    productHTML += '<img src="' + product.image + '" alt="Producto">';
+    productHTML += '<img data-src="' + product.image + '" alt="Producto">';
     productHTML += '<h2>' + product.name + '</h2>';
     productHTML += '<p class="price">' + formatCurrency(product.price) + '</p>';
     productHTML += '<p>Código: ' + product.code + '</p>';
@@ -164,6 +164,30 @@ function loadAndFilterProducts() {
   // Actualizar paginación después de aplicar los filtros
   currentPage = 1; // Restablecer la página actual a 1
   updatePagination();
+  
+  // Lazy loading de imágenes
+  const images = document.querySelectorAll('img[data-src]');
+  
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.1
+  };
+  
+  const observer = new IntersectionObserver(function(entries, observer) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        const src = img.getAttribute('data-src');
+        img.setAttribute('src', src);
+        observer.unobserve(img);
+      }
+    });
+  }, options);
+  
+  images.forEach(image => {
+    observer.observe(image);
+  });
 }
 
 // Función para actualizar la paginación
