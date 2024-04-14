@@ -180,16 +180,20 @@ function updatePagination() {
   
   // Función para ir a la página anterior
   window.previousPage = function() {
-    currentPage--;
-    displayCurrentPage();
-    displayPagination();
+    if (currentPage > 1) {
+      currentPage--;
+      displayCurrentPage();
+      displayPagination();
+    }
   };
   
   // Función para ir a la página siguiente
   window.nextPage = function() {
-    currentPage++;
-    displayCurrentPage();
-    displayPagination();
+    if (currentPage < totalPages) {
+      currentPage++;
+      displayCurrentPage();
+      displayPagination();
+    }
   };
   
   // Mostrar la página actual y la paginación
