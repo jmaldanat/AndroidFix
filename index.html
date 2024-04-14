@@ -137,4 +137,53 @@ $(document).ready(function() {
                 $('#productContainer').append(data);
                 isLoading = false;
             },
-            error: function(xhr, status
+            error: function(xhr, status, error) {
+                console.error('Error al cargar productos:', error);
+                isLoading = false;
+            }
+        });
+    }
+
+    function loadNextPage() {
+        if (!isLoading) {
+            currentPage++;
+            loadProducts(currentPage);
+        }
+    }
+
+    loadProducts(currentPage);
+
+    $(window).scroll(function() {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            loadNextPage();
+        }
+    });
+
+    $('#searchButton').click(filterProducts);
+
+    const images = document.querySelectorAll('img[data-src]');
+    const options = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver(function(entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                const src = img.getAttribute('data-src');
+                img.setAttribute('src', src);
+                observer.unobserve(img);
+            }
+        });
+    }, options);
+
+    images.forEach(image => {
+        observer.observe(image);
+    });
+});
+</script>
+
+</body>
+</html>
