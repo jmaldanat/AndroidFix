@@ -132,9 +132,11 @@ function filterProducts() {
   maxPrice = document.getElementById("maxPrice").value.trim(); // Eliminar espacios en blanco al inicio y al final
   container = document.querySelector(".container");
   
+  // Limpiar el contenedor antes de comenzar una nueva búsqueda
+  container.innerHTML = "";
+  
   // Filtrar productos del archivo JSON
   $.getJSON("products.json", function(data) {
-    container.innerHTML = ""; // Limpiar el contenedor antes de agregar productos filtrados
     data.forEach(function(product) {
       title = product.name;
       price = parseFloat(product.price);
@@ -256,3 +258,4 @@ images.forEach(image => {
 
 </body>
 </html>
+
