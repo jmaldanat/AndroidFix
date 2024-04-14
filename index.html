@@ -140,7 +140,7 @@ $(document).ready(function() {
     function loadProducts(page) {
         isLoading = true;
         $.ajax({
-            url: 'obtener_productos.php',
+            url: '/obtener_productos.php',
             method: 'GET',
             data: { page: page, itemsPerPage: itemsPerPage },
             success: function(data) {
