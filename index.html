@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Productos</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<!-- Agrega enlaces a tus estilos CSS si los tienes -->
+<link rel="stylesheet" href="estilos.css">
+<style>
+h1 {text-align: center;}
+.search-container {
+  margin-bottom: 2cm;
+}
+.jm-loadingpage {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 999999999;
+    background: url(https://github.com/jmaldanat/QR_COC/blob/main/cocloading.gif?raw=true) center no-repeat #fff;
+}
+.container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+}
+.product {
+  border: 1px solid #1C6EA4;
+  background-color: #EEEEEE;
+  padding: 10px;
+  text-align: center;
+}
+.product img {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+  max-height: 250px;
+}
+.product h2 {
+  margin: 5px 0;
+  font-size: 16px;
+}
+.product p.price {
+  margin: 5px 0;
+  font-size: 18px;
+  color: green;
+}
+.search-container {
+  text-align: center;
+}
+.search-container input[type=text],
+.search-container input[type=number] {
+  padding: 5px;
+  margin-right: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+.search-container button {
+  padding: 5px 10px;
+  background-color: #1C6EA4;
+  color: white;
+  border: none;
+  font-size: 16px;
+}
+#pagination button {
+  padding: 10px 20px;
+  font-size: 18px;
+}
+.product a {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #1C6EA4;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+.note {
+  font-size: 12px;
+  color: #555;
+  margin-top: 5px;
+}
+</style>
+</head>
+<body>
+<h1><img src="https://github.com/jmaldanat/QR_COC/blob/main/Encargocombo.png?raw=true" width="400" height="304"></h1>
+<div class="search-container">
+<div class="jm-loadingpage"></div>
+  <input type="text" id="myInput" placeholder="Buscar por nombre...">
+  <input type="number" id="maxPrice" placeholder="Precio máximo">
+  <button type="button" id="searchButton">Buscar</button>
+  <div class="note">Nota: Si tienes un presupuesto, escribe el precio máximo sin puntos ni comas.</div>
+  <div class="note">👉 Todos los productos son 100% Originales ✅.</div>
+  <div class="note">👉 Envío GRATIS a toda Colombia en compras mayores a 3 productos 🚚.</div>
+  <div class="note">👉 Métodos de Pago Crafter of Chaos: Bancolombia, Nequi, Transfiya.</div>
+  <div class="note">👉 Envíos Bogotá 🛵: $8.000.</div>
+  <div class="note">👉 Envíos Nacionales ✈️ $15.000.</div>
+</div>
+<div class="container" id="productContainer"></div>
+<div id="pagination" style="text-align: center; margin-top: 20px;"></div>
+
+
+<script>
+$(document).ready(function() {
+    var currentPage = 1;
+    var itemsPerPage = 8;
+    var isLoading = false;
+
+    function formatCurrency(number) {
+        return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'MXN' }).format(number);
+    }
+
+    function removeAccents(str) {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function filterProducts() {
+        var input, filter, maxPrice, container, products, product, title, price, i, txtValue;
+        input = document.getElementById("myInput");
+        filter = removeAccents(input.value.toUpperCase());
+        maxPrice = document.getElementById("maxPrice").value.trim();
+        container = document.getElementById("productContainer");
+        products = container.getElementsByClassName("product");
+        for (i = 0; i < products.length; i++) {
+            product = products[i];
+            title = product.getElementsByTagName("h2")[0];
+            price = parseFloat(product.getElementsByClassName("price")[0].textContent.replace("$", "").replace(",", ""));
+            txtValue = removeAccents(title.textContent || title.innerText);
+            if ((txtValue.toUpperCase().indexOf(filter) > -1) && (maxPrice === "" || isNaN(maxPrice) || price <= parseFloat(maxPrice))) {
+                product.style.display = "";
+            } else {
+                product.style.display = "none";
+            }
+        }
+        updatePagination();
+    }
+
+    function loadProducts(page) {
+        isLoading = true;
+        $.ajax({
+            url: 'obtener_productos.php',
+            method: 'GET',
+            data: { page: page, itemsPerPage: itemsPerPage },
+            success: function(data) {
+                $('#productContainer').append(data);
+                isLoading = false;
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al cargar productos:', error);
+                isLoading = false;
+            }
+        });
+    }
+
+    function loadNextPage() {
+        if (!isLoading) {
+            currentPage++;
+            loadProducts(currentPage);
+        }
+    }
+
+    loadProducts(currentPage);
+
+    $(window).scroll(function() {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            loadNextPage();
+        }
+    });
+
+    $('#searchButton').click(filterProducts);
+
+    const images = document.querySelectorAll('img[data-src]');
+    const options = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver(function(entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                const src = img.getAttribute('data-src');
+                img.setAttribute('src', src);
+                observer.unobserve(img);
+            }
+        });
+    }, options);
+
+    images.forEach(image => {
+        observer.observe(image);
+    });
+});
+</script>
+
+</body>
+</html>
