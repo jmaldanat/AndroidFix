@@ -112,39 +112,57 @@ h1 {text-align: center;}
 
 <script>
 
+// Función para dar formato al precio con moneda
 function formatCurrency(number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'MXN' }).format(number);
 }
 
+// Función para eliminar acentos de una cadena
 function removeAccents(str) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-var currentPage = 1; // Declara la variable currentPage fuera de la función updatePagination()
+var currentPage = 1; // Variable para almacenar la página actual
 
+// Función para filtrar productos
 function filterProducts() {
   var input, filter, maxPrice, container, products, product, title, price, i, txtValue;
   input = document.getElementById("myInput");
   filter = removeAccents(input.value.toUpperCase()); // Convertir a mayúsculas y eliminar tildes
-  maxPrice = document.getElementById("maxPrice").value.trim(); // Elimina espacios en blanco al inicio y al final
+  maxPrice = document.getElementById("maxPrice").value.trim(); // Eliminar espacios en blanco al inicio y al final
   container = document.querySelector(".container");
-  products = container.getElementsByClassName("product");
-  for (i = 0; i < products.length; i++) {
-    product = products[i];
-    title = product.getElementsByTagName("h2")[0];
-    price = parseFloat(product.getElementsByClassName("price")[0].textContent.replace("$", "").replace(",", ""));
-    txtValue = removeAccents(title.textContent || title.innerText); // Convertir a minúsculas y eliminar tildes
-    if ((txtValue.toUpperCase().indexOf(filter) > -1) && (maxPrice === "" || isNaN(maxPrice) || price <= parseFloat(maxPrice))) {
-      product.style.display = "";
-    } else {
-      product.style.display = "none";
-    }
-  }
   
-  // Actualizar la paginación después de aplicar los filtros
-  updatePagination();
+  // Filtrar productos del archivo JSON
+  $.getJSON("products.json", function(data) {
+    container.innerHTML = ""; // Limpiar el contenedor antes de agregar productos filtrados
+    data.forEach(function(product) {
+      title = product.name;
+      price = parseFloat(product.price);
+      txtValue = removeAccents(title); // Convertir a minúsculas y eliminar tildes
+      
+      // Aplicar filtros
+      if ((txtValue.toUpperCase().indexOf(filter) > -1) && (maxPrice === "" || isNaN(maxPrice) || price <= parseFloat(maxPrice))) {
+        // Crear elementos HTML para cada producto
+        var productHTML = '<div class="product">';
+        productHTML += '<img src="' + product.image + '" alt="Producto">';
+        productHTML += '<h2>' + product.name + '</h2>';
+        productHTML += '<p class="price">' + formatCurrency(product.price) + '</p>';
+        productHTML += '<p>Código: ' + product.code + '</p>';
+        productHTML += '<p>Grupo: ' + product.group + '</p>';
+        productHTML += '<a href="' + product.link + '" target="_blank">Comprar</a>';
+        productHTML += '</div>';
+        
+        // Agregar producto al contenedor
+        container.insertAdjacentHTML('beforeend', productHTML);
+      }
+    });
+    
+    // Actualizar paginación después de aplicar los filtros
+    updatePagination();
+  });
 }
 
+// Función para actualizar la paginación
 function updatePagination() {
   var products = document.querySelectorAll('.product');
   var itemsPerPage = 8;
@@ -202,63 +220,42 @@ function updatePagination() {
   displayPagination();
 }
 
-// Llamar a la función de actualización de la paginación al cargar la página
+// Llamar a la función de filtrado al cargar la página
 window.addEventListener('load', function() {
-  var container = document.querySelector(".container");
-  var itemsPerPage = 8;
+  filterProducts();
+});
+
+// Lazy loading de imágenes
+const images = document.querySelectorAll('img[data-src]');
   
-  // Cargar productos desde el archivo JSON
-  $.getJSON("products.json", function(data) {
-    data.forEach(function(product, index) {
-      if (index < itemsPerPage) {
-        // Crear elementos HTML para cada producto
-        var productHTML = '<div class="product">';
-        productHTML += '<img src="' + product.image + '" alt="Producto">';
-        productHTML += '<h2>' + product.name + '</h2>';
-        productHTML += '<p class="price">' + formatCurrency(product.price) + '</p>';
-        productHTML += '<p>Código: ' + product.code + '</p>';
-        productHTML += '<p>Grupo: ' + product.group + '</p>';
-        productHTML += '<a href="' + product.link + '" target="_blank">Comprar</a>';
-        productHTML += '</div>';
-        
-        // Agregar producto al contenedor
-        container.insertAdjacentHTML('beforeend', productHTML);
-      }
-    });
-    
-    // Actualizar paginación
-    updatePagination();
-  });
-  
-  // Lazy loading de imágenes
-  const images = document.querySelectorAll('img[data-src]');
-  
-  const options = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 0.1
-  };
+const options = {
+  root: null,
+  rootMargin: '0px',
+  threshold: 0.1
+};
 
 $(document).ready(function() {
-    $(".jm-loadingpage").fadeOut("slow");;
+  $(".jm-loadingpage").fadeOut("slow");;
 });
 
-  const observer = new IntersectionObserver(function(entries, observer) {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        const src = img.getAttribute('data-src');
-        img.setAttribute('src', src);
-        observer.unobserve(img);
-      }
-    });
-  }, options);
-  
-  images.forEach(image => {
-    observer.observe(image);
+const observer = new IntersectionObserver(function(entries, observer) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const img = entry.target;
+      const src = img.getAttribute('data-src');
+      img.setAttribute('src', src);
+      observer.unobserve(img);
+    }
   });
+}, options);
+  
+images.forEach(image => {
+  observer.observe(image);
 });
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
