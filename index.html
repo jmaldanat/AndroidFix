@@ -188,6 +188,11 @@ function loadAndFilterProducts() {
   images.forEach(image => {
     observer.observe(image);
   });
+  
+  // Ocultar el gif de carga cuando se muestre la primera imagen con data-src
+  if (images.length > 0) {
+    $(".jm-loadingpage").fadeOut("slow");
+  }
 }
 
 // Función para actualizar la paginación
@@ -262,33 +267,6 @@ function filterProducts() {
   loadAndFilterProducts();
 }
 
-// Lazy loading de imágenes
-const images = document.querySelectorAll('img[data-src]');
-  
-const options = {
-  root: null,
-  rootMargin: '0px',
-  threshold: 0.1
-};
-
-$(document).ready(function() {
-  $(".jm-loadingpage").fadeOut("slow");
-});
-
-const observer = new IntersectionObserver(function(entries, observer) {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const img = entry.target;
-      const src = img.getAttribute('data-src');
-      img.setAttribute('src', src);
-      observer.unobserve(img);
-    }
-  });
-}, options);
-  
-images.forEach(image => {
-  observer.observe(image);
-});
 </script>
 
 </body>
